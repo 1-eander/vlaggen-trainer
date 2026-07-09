@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vlaggen Trainer</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #121212 0%, #1a1a2e 100%);
+            color: #ffffff;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 40px;
+            width: 100%;
+            max-width: 500px;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+            text-align: center;
+            position: relative;
+            transition: max-width 0.3s ease;
+        }
+
+        h1 {
+            font-size: 24px;
+            margin-bottom: 20px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 30px;
+            text-align: left;
+        }
+
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            accent-color: #007aff;
+        }
+
+        .divider {
+            height: 1px;
+            background: rgba(255, 255, 255, 0.1);
+            margin: 15px 0;
+        }
+
+        .btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 12px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            width: 100%;
+            font-weight: 500;
+        }
+
+        .btn:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: translateY(-2px);
+        }
+
+        .btn-primary {
+            background: #007aff;
+            border: none;
+            margin-top: 10px;
+        }
+
+        .btn-primary:hover {
+            background: #0056b3;
+        }
+
+        #flashcard-screen {
+            display: none;
+        }
+        
+        .undo-btn {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: rgba(255, 255, 255, 0.7);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            z-index: 10;
+        }
+
+        .undo-btn:hover {
+            background: rgba(255, 255, 255, 0.15);
+            color: #ffffff;
+            transform: scale(1.05);
+        }
+
+        .flag-container {
+            width: 100%;
+            height: 250px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 12px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .flag-image {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            cursor: pointer;
+        }
+
+        .star-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: rgba(255, 255, 255, 0.3);
+            transition: color 0.2s;
+            z-index: 10;
+            text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;
+        }
+
+        .star-btn.active {
+            color: #ffd700;
+        }
+
+        .hint-text {
+            font-size: 20px;
+            letter-spacing: 4px;
+            margin-bottom: 20px;
+            color: rgba(255, 255, 255, 0.7);
+            min-height: 30px;
+        }
+
+        .answer-text {
+            font-size: 28px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+            display: none;
+        }
+
+        .btn-wrong {
+            background: rgba(255, 59, 48, 0.2);
+            border-color: rgba(255, 59, 48, 0.5);
+            color: #ff453a;
+        }
+
+        .btn-wrong:hover {
+            background: rgba(255, 59, 48, 0.3);
+        }
+
+        .btn-correct {
+            background: rgba(48, 209, 88, 0.2);
+            border-color: rgba(48, 209, 88, 0.5);
+            color: #32d74b;
+        }
+
+        .btn-correct:hover {
+            background: rgba(48, 209, 88, 0.3);
+        }
+
+        .shortcuts {
+            margin-top: 30px;
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.4);
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        kbd {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: monospace;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 100;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            padding: 30px;
+            border-radius: 20px;
+            max-width: 90%;
+            max-height: 90%;
+            text-align: center;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+            position: relative;
+        }
+
+        .modal-image {
+            max-width: 100%;
+            max-height: 65vh;
+            object-fit: contain;
+            border-radius: 8px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            margin-bottom: 20px;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            font-size: 30px;
+            color: rgba(255,255,255,0.5);
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+
+        .modal-close:hover {
+            color: #ffffff;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="start-screen" class="glass-panel">
+        <h1>Selecteer Continenten</h1>
+        
+        <div class="filter-group">
+            <label class="checkbox-label"><input type="checkbox" value="europa" checked> Europa</label>
+            <label class="checkbox-label"><input type="checkbox" value="azie" checked> Azië</label>
+            <label class="checkbox-label"><input type="checkbox" value="afrika" checked> Afrika</label>
+            <label class="checkbox-label"><input type="checkbox" value="noord-amerika" checked> Noord-Amerika</label>
+            <label class="checkbox-label"><input type="checkbox" value="zuid-amerika" checked> Zuid-Amerika</label>
+            <label class="checkbox-label"><input type="checkbox" value="oceanie" checked> Oceanië</label>
+            <label class="checkbox-label"><input type="checkbox" value="antarctica" checked> Antarctica</label>
+            
+            <div class="divider"></div>
+            
+            <label class="checkbox-label">
+                <input type="checkbox" id="star-filter"> ⭐ Oefen alleen gemarkeerd
+            </label>
+        </div>
+
+        <button class="btn" id="btn-browse" style="margin-bottom: 10px; background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.15);">Bekijk geselecteerde vlaggen</button>
+        <button class="btn btn-primary" id="btn-start">Start met oefenen</button>
+    </div>
+
+    <div id="browse-screen" class="glass-panel" style="display: none; padding: 40px;">
+        <button id="btn-browse-back" class="undo-btn" title="Terug naar menu">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M19 12H5M12 19l-7-7 7-7"/>
+            </svg>
+        </button>
+
+        <h1 style="margin-bottom: 30px; margin-top: 10px;">Geselecteerde Vlaggen</h1>
+        
+        <div id="browse-list" style="max-height: 65vh; overflow-y: auto; display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 15px; padding-right: 10px; text-align: center;">
+            </div>
+    </div> <div id="flashcard-screen" class="glass-panel">
+        <button id="btn-undo" class="undo-btn" style="display: none;" title="Vorige vlag (Backspace)">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M9 14 4 9l5-5"/>
+                <path d="M4 9h10.5a5.5 5.5 0 0 1 5.5 5.5v0a5.5 5.5 0 0 1-5.5 5.5H11"/>
+            </svg>
+        </button>
+
+        <div id="progress-text" style="text-align: center; margin-bottom: 15px; color: rgba(255,255,255,0.5); font-weight: bold; font-size: 14px; letter-spacing: 1px;">0/0</div>
+
+        <div class="flag-container">
+            <button class="star-btn" id="btn-star">★</button>
+            <img src="" alt="Vlag" class="flag-image" id="flag-img" style="display: none;">
+            <div style="color: rgba(255,255,255,0.3);">[ Vlag Afbeelding Hier ]</div>
+        </div>
+
+        <div class="hint-text" id="hint-display">_ _ _ _ _ _ _</div>
+        <div class="answer-text" id="answer-display">Nederland</div>
+
+        <button class="btn" id="btn-flip">Omdraaien (Spatie)</button>
+        <button class="btn" id="btn-hint" style="margin-top: 10px;">Hint (H)</button>
+
+        <div class="action-buttons" id="action-buttons">
+            <button class="btn btn-wrong" id="btn-wrong">Fout (←)</button>
+            <button class="btn btn-correct" id="btn-correct">Goed (→)</button>
+        </div>
+
+        <div class="shortcuts">
+            <span><kbd>Spatie</kbd> Draai</span>
+            <span><kbd>H</kbd> Hint</span>
+            <span><kbd>←</kbd> Fout</span>
+            <span><kbd>→</kbd> Goed</span>
+            <span><kbd>⌫</kbd> Undo</span>
+        </div>
+    </div>
+
+    <div id="flag-modal" class="modal">
+        <div class="modal-content" style="position: relative;"> 
+            <span class="modal-close" id="modal-close">&times;</span>
+            <button class="star-btn" id="modal-star" style="top: 25px; right: 60px; font-size: 28px;">★</button>
+            <img src="" alt="Grote Vlag" class="modal-image" id="modal-img">
+            <h2 id="modal-country-name" style="font-size: 26px; font-weight: 600; letter-spacing: 0.5px;">Landnaam</h2>
+        </div>
+    </div>
+
+<script src="app.js"></script>
+
+</body>
+</html>
